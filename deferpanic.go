@@ -11,8 +11,13 @@ import (
 // measurement.
 func DeferPanic(service goa.Service, key string) goa.Middleware {
 	dps := deferstats.NewClient(key)
+	errorHandler := service.ErrorHandler()
 	service.SetErrorHandler(func(ctx *goa.Context, err error) {
-		dps.Wrap(err)
+		if _, ok := err.(*goa.BadRequestError); !ok {
+			// Don't report bad requests
+			dps.Wrap(err)
+		}
+		errorHandler(ctx, err)
 	})
 	go dps.CaptureStats()
 	return func(h goa.Handler) goa.Handler {

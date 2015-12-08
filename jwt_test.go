@@ -123,21 +123,36 @@ var _ = Describe("JWT Middleware", func() {
 })
 var _ = Describe("JWT Token", func() {
 	var claims map[string]interface{}
-	//	validFunc := func(token *jwt.Token) (interface{}, error) {
-	//		return signingKey, nil
-	//	}
+	var spec middleware.TokenSpecification
+	var tm *middleware.TokenManager
+	spec = middleware.TokenSpecification{
+		Issuer:     "goa",
+		TTLMinutes: 20,
+	}
+	tm = middleware.NewTokenManager(spec)
+	validFunc := func(token *jwt.Token) (interface{}, error) {
+		return hmacTestKey, nil
+	}
 
 	BeforeEach(func() {
 		claims = make(map[string]interface{})
-		claims["randomint"] = 42
+
 		claims["randomstring"] = "43"
 
 	})
 
 	It("creates a valid token", func() {
-		tok, err := middleware.Token(claims)
+		tok, err := tm.Create(claims)
 		Ω(err).ShouldNot(HaveOccurred())
-
+		Ω(len(tok)).ShouldNot(BeZero())
+	})
+	It("contains the intended claims", func() {
+		tok, err := tm.Create(claims)
+		Ω(err).ShouldNot(HaveOccurred())
+		rettok, err := jwt.Parse(tok, validFunc)
+		Ω(err).ShouldNot(HaveOccurred())
+		rndmstring := rettok.Claims["randomstring"].(string)
+		Ω(rndmstring).Should(Equal("43"))
 	})
 
 })

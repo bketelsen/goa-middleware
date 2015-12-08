@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
-	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/raphael/goa"
@@ -109,19 +108,4 @@ func JWTMiddleware(spec JWTSpecification) goa.Middleware {
 		}
 
 	}
-}
-
-func Token(claims map[string]interface{}) (string, error) {
-	// create a signer for rsa 256
-	t := jwt.New(jwt.GetSigningMethod("HS256"))
-
-	for k, v := range claims {
-		t.Claims[k] = v
-	}
-
-	// set the expire time
-	// see http://tools.ietf.org/html/draft-ietf-oauth-json-web-token-20#section-4.1.4
-	t.Claims["exp"] = time.Now().Add(time.Minute * 1).Unix()
-	return t.SignedString(hmacTestKey)
-
 }

@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
@@ -26,6 +27,10 @@ func keyFuncWrapper(k Keyfunc) jwt.Keyfunc {
 		return k(tok)
 	}
 }
+
+//TEMP
+// Sample data from http://tools.ietf.org/html/draft-jones-json-web-signature-04#appendix-A.1
+var hmacTestKey, _ = ioutil.ReadFile("test/hmacTestKey")
 
 type JWTSpecification struct {
 	// TokenHeader is the HTTP header to search for the JWT Token
@@ -101,7 +106,7 @@ func JWTMiddleware(spec JWTSpecification) goa.Middleware {
 
 func Token(claims map[string]interface{}) (string, error) {
 	// create a signer for rsa 256
-	t := jwt.New(jwt.GetSigningMethod("RS256"))
+	t := jwt.New(jwt.GetSigningMethod("HS256"))
 
 	for k, v := range claims {
 		t.Claims[k] = v
@@ -110,6 +115,6 @@ func Token(claims map[string]interface{}) (string, error) {
 	// set the expire time
 	// see http://tools.ietf.org/html/draft-ietf-oauth-json-web-token-20#section-4.1.4
 	t.Claims["exp"] = time.Now().Add(time.Minute * 1).Unix()
-	return t.SignedString("blah")
+	return t.SignedString(hmacTestKey)
 
 }

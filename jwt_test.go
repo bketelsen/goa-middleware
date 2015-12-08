@@ -1,6 +1,8 @@
 package middleware_test
 
 import (
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
@@ -13,6 +15,9 @@ import (
 )
 
 var signingKey = []byte("jwtsecretsauce")
+
+// Sample data from http://tools.ietf.org/html/draft-jones-json-web-signature-04#appendix-A.1
+var hmacTestKey, _ = ioutil.ReadFile("test/hmacTestKey")
 
 var _ = Describe("JWT Middleware", func() {
 	var ctx *goa.Context
@@ -115,6 +120,27 @@ var _ = Describe("JWT Middleware", func() {
 		// this one can't pass, right?
 		Ω(ctx.Value(middleware.JWTKey)).ShouldNot(Equal("TOKEN"))
 	})
+
+})
+var _ = Describe("JWT Token", func() {
+	var claims map[string]interface{}
+	//	validFunc := func(token *jwt.Token) (interface{}, error) {
+	//		return signingKey, nil
+	//	}
+
+	BeforeEach(func() {
+		claims = make(map[string]interface{})
+		claims["randomint"] = 42
+		claims["randomstring"] = "43"
+
+	})
+
+	It("creates a valid token", func() {
+		tok, err := middleware.Token(claims)
+		Ω(err).ShouldNot(HaveOccurred())
+		fmt.Println(tok)
+	})
+
 })
 
 type TestResponseWriter struct {

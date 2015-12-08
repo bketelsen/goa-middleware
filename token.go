@@ -7,8 +7,9 @@ import (
 )
 
 type TokenSpecification struct {
-	TTLMinutes int
-	Issuer     string
+	TTLMinutes     int
+	Issuer         string
+	SigningKeyFunc Keyfunc
 }
 
 type TokenManager struct {
@@ -38,6 +39,6 @@ func (tm *TokenManager) Create(claims map[string]interface{}) (string, error) {
 	t.Claims["iat"] = time.Now().Unix()
 	// set the expire time
 	t.Claims["exp"] = time.Now().Add(time.Minute * time.Duration(tm.spec.TTLMinutes)).Unix()
-	return t.SignedString(hmacTestKey)
+	return t.SignedString(keyFuncWrapper(tm.spec.SigningKeyFunc))
 
 }

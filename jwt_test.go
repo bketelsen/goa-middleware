@@ -125,15 +125,15 @@ var _ = Describe("JWT Token", func() {
 	var claims map[string]interface{}
 	var spec middleware.TokenSpecification
 	var tm *middleware.TokenManager
-	spec = middleware.TokenSpecification{
-		Issuer:     "goa",
-		TTLMinutes: 20,
-	}
-	tm = middleware.NewTokenManager(spec)
 	validFunc := func(token *jwt.Token) (interface{}, error) {
 		return hmacTestKey, nil
 	}
-
+	spec = middleware.TokenSpecification{
+		Issuer:         "goa",
+		TTLMinutes:     20,
+		SigningKeyFunc: validFunc,
+	}
+	tm = middleware.NewTokenManager(spec)
 	BeforeEach(func() {
 		claims = make(map[string]interface{})
 

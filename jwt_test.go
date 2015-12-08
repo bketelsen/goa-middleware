@@ -1,7 +1,6 @@
 package middleware_test
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -138,7 +137,7 @@ var _ = Describe("JWT Token", func() {
 	It("creates a valid token", func() {
 		tok, err := middleware.Token(claims)
 		Ω(err).ShouldNot(HaveOccurred())
-		fmt.Println(tok)
+
 	})
 
 })

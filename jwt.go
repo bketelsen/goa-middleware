@@ -97,10 +97,17 @@ func JWTMiddleware(spec JWTSpecification) goa.Middleware {
 				err = ctx.Respond(http.StatusUnauthorized, []byte(msg))
 				return err
 			}
-			ctx.SetValue(JWTKey, parsed)
+			if parsed.Valid {
+				ctx.SetValue(JWTKey, parsed)
+			} else {
+				msg := "Invalid Token"
+				err = ctx.Respond(http.StatusUnauthorized, []byte(msg))
+				return err
+			}
 
 			return h(ctx)
 		}
+
 	}
 }
 

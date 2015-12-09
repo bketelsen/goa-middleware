@@ -1,4 +1,4 @@
-package middleware_test
+package jwt_test
 
 import (
 	"io/ioutil"
@@ -10,7 +10,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/raphael/goa"
-	"github.com/raphael/goa-middleware"
 )
 
 var signingKey = []byte("jwtsecretsauce")

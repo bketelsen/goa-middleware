@@ -1,4 +1,4 @@
-package middleware
+package deferpanic
 
 import (
 	"net/http"

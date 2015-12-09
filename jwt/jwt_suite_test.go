@@ -1,4 +1,4 @@
-package middleware_test
+package jwt_test
 
 import (
 	. "github.com/onsi/ginkgo"

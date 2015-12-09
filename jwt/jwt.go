@@ -12,12 +12,16 @@ import (
 type SigningMethod int
 
 const (
-	RSA256 SigningMethod = iota
+	_                    = iota
+	RSA256 SigningMethod = iota + 1
 	RSA384
 	RSA512
 	HMAC256
 	HMAC384
 	HMAC512
+	ECDSA256
+	ECDSA384
+	ECDSA512
 )
 
 var signingmethods map[SigningMethod]string
@@ -31,6 +35,9 @@ func init() {
 	signingmethods[HMAC256] = "HS256"
 	signingmethods[HMAC384] = "HS384"
 	signingmethods[HMAC512] = "HS512"
+	signingmethods[ECDSA256] = "ES256"
+	signingmethods[ECDSA384] = "ES384"
+	signingmethods[ECDSA512] = "ES512"
 }
 
 // JWTKey is the JWT middleware key used to store the token in the context.
@@ -54,8 +61,8 @@ func keyFuncWrapper(k ValidationKeyfunc) jwt.Keyfunc {
 }
 
 // KeyFunc is a function that returns the key to sign a
-// token.  It should return a []byte (for HMAC or RSA)
-// or a *rsa.PublicKey (RSA only)
+// token.  It should return a []byte (for all)
+// or a *rsa.PrivateKey or *ecdsa.PrivateKey
 type KeyFunc func() (interface{}, error)
 
 type Specification struct {

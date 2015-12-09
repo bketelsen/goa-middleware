@@ -12,7 +12,8 @@ type TokenManager struct {
 }
 
 // NewTokenManager returns a TokenManager.  If TTLMinutes isn't specified
-// it will default to 5 minutes.
+// it will default to 5 minutes.  Use the same Specification as you use for
+// Middleware() to ensure your tokens are compatible.
 func NewTokenManager(spec *Specification) *TokenManager {
 	if spec.TTLMinutes == 0 {
 		spec.TTLMinutes = 5

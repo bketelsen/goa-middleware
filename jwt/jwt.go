@@ -99,8 +99,7 @@ type Specification struct {
 // Middleware is a middleware that retrieves a JWT token from the request if present and
 // injects it into the context.  It checks for the token in the HTTP Headers first, then the querystring if
 // the specification "AllowParam" is true.
-// Retrieve it using ctx.Value(JWTKey).  A TokenManager is injected into
-// the goa.Context available as ctx.Value(TokenManagerKey).(*TokenManager)
+// Retrieve it using ctx.Value(JWTKey).
 func Middleware(spec *Specification) goa.Middleware {
 	if spec.TokenHeader == "" {
 		spec.TokenHeader = "Authorization"
@@ -108,10 +107,8 @@ func Middleware(spec *Specification) goa.Middleware {
 	if spec.TokenParam == "" {
 		spec.TokenParam = "token"
 	}
-	tokenManager := NewTokenManager(spec)
 	return func(h goa.Handler) goa.Handler {
 		return func(ctx *goa.Context) error {
-			ctx.SetValue(TokenManagerKey, tokenManager)
 			// If AuthOptions is false, and this is an OPTIONS request
 			// just let the request fly
 			if !spec.AuthOptions && ctx.Request().Method == "OPTIONS" {

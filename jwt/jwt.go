@@ -89,12 +89,12 @@ type Specification struct {
 	CommonClaims map[string]interface{}
 }
 
-// JWTMiddleware is a middleware that retrieves a JWT token from the request if present and
+// Middleware is a middleware that retrieves a JWT token from the request if present and
 // injects it into the context.  It checks for the token in the HTTP Headers first, then the querystring if
 // the specification "AllowParam" is true.
 // Retrieve it using ctx.Value(JWTKey).  A TokenManager is injected into
 // the goa.Context available as ctx.Value(TokenManagerKey).(*TokenManager)
-func JWTMiddleware(spec *Specification) goa.Middleware {
+func Middleware(spec *Specification) goa.Middleware {
 	if spec.TokenHeader == "" {
 		spec.TokenHeader = "Authorization"
 	}

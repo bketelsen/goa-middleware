@@ -9,6 +9,7 @@ import (
 	"github.com/raphael/goa"
 )
 
+// SigningMethod is the enum that lists the supported token signature hashing algorithms.
 type SigningMethod int
 
 const (
@@ -65,6 +66,10 @@ func keyFuncWrapper(k ValidationKeyfunc) jwt.Keyfunc {
 // or a *rsa.PrivateKey or *ecdsa.PrivateKey
 type KeyFunc func() (interface{}, error)
 
+// Specification describes the JWT authorization properties.
+// It is used to both instantiate a middleware and a token manager.
+// The middleware uses the specification properties to authorize the incoming
+// request while the token manager uses it to create authorization tokens.
 type Specification struct {
 	// TokenHeader is the HTTP header to search for the JWT Token
 	// Defaults to "Authorization"

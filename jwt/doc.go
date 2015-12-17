@@ -1,5 +1,5 @@
 /*
-Package jwt makes it possible to authorize API requests usin JSON Web Tokens,
+Package jwt makes it possible to authorize API requests using JSON Web Tokens,
 see https://jwt.io/introduction/
 
 Middleware

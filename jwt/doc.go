@@ -40,5 +40,26 @@ using the same specification used to create the middleware:
 		}
 		return ctx.Respond(200, token) // You'll probably need something different here
 	}
+
+The token manager also implements the osin.AuthorizeTokenGen and AccessTokenGen interfaces (https://github.com/RangelReale/osin)
+which allows you to set osin's AccessTokenGen and AuthorizeTokenGen implementions to an instantiated TokenManager.
+
+	// Do not use this config, provided as an example
+	sconfig := osin.NewServerConfig()
+	sconfig.AllowedAuthorizeTypes = osin.AllowedAuthorizeType{osin.CODE, osin.TOKEN}
+	sconfig.AllowedAccessTypes = osin.AllowedAccessType{
+		osin.AUTHORIZATION_CODE,
+		osin.REFRESH_TOKEN,
+		osin.PASSWORD,
+		osin.CLIENT_CREDENTIALS,
+		osin.ASSERTION,
+	}
+	osinserver := osin.NewServer(sconfig, NewMyOsinStorageImplementation(...))
+	osinserver.AccessTokenGen = tm
+	osinserver.AuthorizeTokenGen = t
+
+Doing this will allow you to use `osin` to manage your backend Oauth2 flow, and use this middleware
+to generate and verify the tokens that are created.
+
 */
 package jwt

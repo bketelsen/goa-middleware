@@ -89,6 +89,9 @@ type Specification struct {
 	AuthOptions bool
 	// TTLMinutes is the TTL for tokens that are generated
 	TTLMinutes int
+	// RefreshTTLMinutes is the TTL for refresh tokens that are generated
+	// and should generally be much longer than TTLMinutes
+	RefreshTTLMinutes int
 	// Issuer is the name of the issuer that will be inserted into the
 	// generated token's claims
 	Issuer string

@@ -98,10 +98,36 @@ type Specification struct {
 	// KeySigningMethod determines the type of key that will be used to sign
 	// Tokens.
 	KeySigningMethod SigningMethod
-	// SigningKeyFunc is a function that retu
+	// SigningKeyFunc is a function that returns the key used to sign the token
 	SigningKeyFunc KeyFunc
 	// CommonClaims is a list of claims added to all tokens issued
 	CommonClaims map[string]interface{}
+}
+
+// GetToken extracts the JWT token from the request if there is one.
+func GetToken(ctx *goa.Context, spec *Specification) (token *jwt.Token, err error) {
+	var found bool
+	var tok string
+	header := ctx.Request().Header.Get(spec.TokenHeader)
+
+	if header != "" {
+		parts := strings.Split(header, " ")
+		if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
+			// This is an error
+		}
+		tok = parts[1]
+		found = true
+	}
+	if !found && spec.AllowParam {
+		tok = ctx.Request().URL.Query().Get(spec.TokenParam)
+
+	}
+	if tok == "" {
+		err = fmt.Errorf("no token")
+		return
+	}
+	token, err = jwt.Parse(tok, keyFuncWrapper(spec.ValidationFunc))
+	return
 }
 
 // Middleware is a middleware that retrieves a JWT token from the request if present and
@@ -122,36 +148,12 @@ func Middleware(spec *Specification) goa.Middleware {
 			if !spec.AuthOptions && ctx.Request().Method == "OPTIONS" {
 				return h(ctx)
 			}
-
-			var found bool
-			var token string
-			header := ctx.Request().Header.Get(spec.TokenHeader)
-
-			if header != "" {
-				parts := strings.Split(header, " ")
-				if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
-					// This is an error
-				}
-				token = parts[1]
-				found = true
-			}
-			if !found && spec.AllowParam {
-				token = ctx.Request().URL.Query().Get(spec.TokenParam)
-
-			}
-
-			if token == "" {
-				err := ctx.Respond(http.StatusUnauthorized, []byte(http.StatusText(http.StatusUnauthorized)))
-				return err
-			}
-			parsed, err := jwt.Parse(token, keyFuncWrapper(spec.ValidationFunc))
+			token, err := GetToken(ctx, spec)
 			if err != nil {
-				msg := fmt.Sprintf("Error parsing token: %s", err.Error())
-				err = ctx.Respond(http.StatusUnauthorized, []byte(msg))
-				return err
+				return ctx.Respond(http.StatusUnauthorized, []byte(http.StatusText(http.StatusUnauthorized)))
 			}
-			if parsed.Valid {
-				ctx.SetValue(JWTKey, parsed)
+			if token.Valid {
+				ctx.SetValue(JWTKey, token)
 			} else {
 				msg := "Invalid Token"
 				err = ctx.Respond(http.StatusUnauthorized, []byte(msg))

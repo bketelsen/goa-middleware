@@ -33,8 +33,8 @@ type gzipResponseWriter struct {
 // header using the net/http library content type detection if the Content-Type
 // header was not set yet.
 func (grw gzipResponseWriter) Write(b []byte) (int, error) {
-	if len(grw.ResponseWriter.Header().Get(headerContentType)) == 0 {
-		grw.ResponseWriter.Header().Set(headerContentType, http.DetectContentType(b))
+	if len(grw.Header().Get(headerContentType)) == 0 {
+		grw.Header().Set(headerContentType, http.DetectContentType(b))
 	}
 	return grw.gzw.Write(b)
 }
@@ -76,23 +76,30 @@ func Middleware(level int) goa.Middleware {
 			// This allows us to re-use an already allocated buffer rather than
 			// allocating a new buffer for every request.
 			gz := gzipPool.Get().(*gzip.Writer)
-			gz.Reset(ctx)
+
+			// Get the original http.ResponseWriter
+			w := ctx.SetResponseWriter(nil)
+			// Reset our gzip writer to use the http.ResponseWriter
+			gz.Reset(w)
 
 			// Wrap the original http.ResponseWriter with our gzipResponseWriter
 			grw := gzipResponseWriter{
-				ResponseWriter: ctx,
+				ResponseWriter: w,
 				gzw:            gz,
 			}
 
+			// Set the new http.ResponseWriter
+			ctx.SetResponseWriter(grw)
+
 			// Call the next handler supplying the gzipResponseWriter instead of
 			// the original.
-			err = h(goa.NewContext(ctx.Context, ctx.Request(), grw, ctx.Request().URL.Query(), ctx.Payload()))
+			err = h(ctx)
 			if err != nil {
 				return
 			}
 
 			// Delete the content length after we know we have been written to.
-			ctx.Header().Del(headerContentLength)
+			grw.Header().Del(headerContentLength)
 			gz.Close()
 			gzipPool.Put(gz)
 			return

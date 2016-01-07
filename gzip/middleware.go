@@ -86,7 +86,7 @@ func Middleware(level int) goa.Middleware {
 
 			// Call the next handler supplying the gzipResponseWriter instead of
 			// the original.
-			err = h(goa.NewContext(nil, ctx.Request(), grw, ctx.Request().URL.Query(), ctx.Payload()))
+			err = h(goa.NewContext(ctx.Context, ctx.Request(), grw, ctx.Request().URL.Query(), ctx.Payload()))
 			if err != nil {
 				return
 			}

@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/julienschmidt/httprouter"
 	"github.com/raphael/goa"
 )
 
@@ -104,7 +103,6 @@ func Middleware(spec Specification) goa.Middleware {
 
 // MountPreflightController mounts the handlers for the CORS preflight requests onto service.
 func MountPreflightController(service goa.Service, spec Specification) {
-	router := service.HTTPHandler().(*httprouter.Router)
 	for _, res := range spec {
 		path := res.Path
 		if res.IsPathPrefix {
@@ -114,22 +112,13 @@ func MountPreflightController(service goa.Service, spec Specification) {
 				path += "/*cors"
 			}
 		}
-		var handle httprouter.Handle
-		handle, _, tsr := router.Lookup("OPTIONS", path)
-		if tsr {
-			if strings.HasSuffix(path, "/") {
-				path = path[:len(path)-1]
-			} else {
-				path = path + "/"
-			}
-			handle, _, _ = router.Lookup("OPTIONS", path)
-		}
+		handle := service.ServeMux().Lookup("OPTIONS", path)
 		if handle == nil {
 			h := func(ctx *goa.Context) error {
 				return ctx.Respond(200, nil)
 			}
 			ctrl := service.NewController("cors")
-			router.OPTIONS(path, ctrl.NewHTTPRouterHandle("preflight", h))
+			service.ServeMux().Handle("OPTIONS", path, ctrl.HandleFunc("preflight", h))
 		}
 	}
 }

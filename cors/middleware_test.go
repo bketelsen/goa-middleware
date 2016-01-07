@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/julienschmidt/httprouter"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/raphael/goa"
@@ -31,11 +30,10 @@ var _ = Describe("Middleware", func() {
 			spec, err := cors.New(dsl)
 			Ω(err).ShouldNot(HaveOccurred())
 			service.Use(cors.Middleware(spec))
-			router := service.HTTPHandler().(*httprouter.Router)
 			h := func(ctx *goa.Context) error { return ctx.Respond(200, nil) }
 			ctrl := service.NewController("test")
-			router.Handle(method, path, ctrl.NewHTTPRouterHandle("", h))
-			router.Handle("OPTIONS", path, ctrl.NewHTTPRouterHandle("", optionsHandler))
+			service.ServeMux().Handle(method, path, ctrl.HandleFunc("", h))
+			service.ServeMux().Handle("OPTIONS", path, ctrl.HandleFunc("", optionsHandler))
 			cors.MountPreflightController(service, spec)
 			portIndex++
 			port := 54511 + portIndex
